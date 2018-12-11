@@ -4,24 +4,63 @@ import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class Sudoku {
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		int [][] first_board = make_board();
-		int[][] suffled_board = suffle(first_board);
-		int level = level_input();
-		int [][] changed_board = change(suffled_board);
-		int [][] board = suffle(changed_board);
-		int [][] answer = board;
-		board = hole_make(board,level);
-		System.out.println("-------------------");
-		for (int k = 0; k < 9; k++) {//각 행에 대한 반복문
-			for (int j = 0; j < 9; j++) {//각 열에 대한 반복문
-            System.out.print(board[k][j]+ " ");//반복문을 수행하며 배열에 있는 값들을 모두 출력한다
+	public static void answer_input(int [][]answer,int [][]board,int heart,int hole) {
+		int row, cal,ans;
+		while(true) { //정답 입력하기(예외처리)
+			try {
+				System.out.println("정답 입력해주세여");
+				System.out.println("가로 몇번째?: ");
+				Scanner input = new Scanner(System.in);
+				row = input.nextInt();
+				System.out.println("세로 몇번째?: ");
+				cal = input.nextInt();
+				System.out.println("답은?: ");
+				ans = input.nextInt();
+				if(1<=row && row<=9 && 1<=cal && cal<=9 && 1<=ans && ans<=9) break;
+				System.out.println("1 에서 9사이의 숫자를 입력해주세여:");
 			}
-		System.out.println();
+			catch(InputMismatchException e) {
+				Scanner input = new Scanner(System.in);
+				System.out.println("숫자를 입력해주세여 ");
+			}
 		}
+
+		if(check(row,cal,ans,answer)==true) {//정답일떄
+			System.out.println("정답!");
+			rerode(row,cal,ans,board);
+			hole --;
+			System.out.println("남은 빈칸 :"+ hole);
+			if(hole != 0 ) answer_input(answer,board,heart,hole);
+			else if(hole == 0 ) {
+				System.out.println("게임 클리어!");
+			}
+		}
+		else if (check(row,cal,ans,answer)==false){// 오답일때
+			System.out.println("틀리렸습니다 ㅠ~ㅠ");
+			heart--;
+			System.out.println("남은 목숨 :" + heart);
+			if(heart != 0) {
+				answer_input(answer,board,heart,hole);
+			}
+		}
+		
 	}
-	public static int level_input(){
+	public static void rerode(int row, int cal ,int ans,int [][]board){// 보드판을 갱신하여 보여준다.
+		board[cal-1][row-1] = ans; 
+		print(board);
+	}
+	public static boolean check(int row, int cal,int ans, int[][] answer) {// 정답인지 아닌지 확인
+		if(answer[cal-1][row-1]==ans) {
+			return true;
+		}
+		else {
+			print(answer);
+			System.out.println(answer[cal-1][row-1]);
+			return false;
+		}
+		
+	}
+	public static int level_input(){// 난이도 받기
 		int level = 0;
 		System.out.println("난이도 입력해주세여 1(easy), 2(hard) :");
 		while(true) {
@@ -55,7 +94,7 @@ public class Sudoku {
 				root[ran_num] = tmp;
 			}
 		}
-		for (int i = 0;i<8;i++) {
+		for (int i = 0;i<9;i++) {
 			if (root[i] == 0) {
 				root[i]=9;
 			}
@@ -104,6 +143,14 @@ public class Sudoku {
 			   }
 			    return suffle_board;
 	}
+	public static void print(int [][] printing){//보드판 보여주기
+	for (int k = 0; k < 9; k++) {//각 행에 대한 반복문
+		for (int j = 0; j < 9; j++) {//각 열에 대한 반복문
+        System.out.print(printing[k][j]+ " ");//반복문을 수행하며 배열에 있는 값들을 모두 출력한다
+		}
+	System.out.println();
+	}
+}
 	public static int [][] change(int [][] board){//가로 세로 바꾸기
 		int [][] board2 = new int[9][9] ;
 		for(int i=0; i<board.length;i++) {
@@ -113,14 +160,7 @@ public class Sudoku {
 		}
 		return board2;
 	}
-	public static int [][] hole_make(int [][] board,int level){
-		int hole = 0;
-		if(level == 1) {
-			 hole = 40;
-		}
-		else if(level == 2) {
-			 hole = 50;
-		}
+	public static int [][] hole_make(int [][] board,int level ,int hole){// 판 구멍뚫기
 		while (hole != 0) {
 			int i = (int)(Math.random()*9);
 			int j = (int)(Math.random()*9);
@@ -131,4 +171,41 @@ public class Sudoku {
 		}
 		return board;
 	}
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+		long start = System.currentTimeMillis();
+		int hole = 0;
+		int heart = 4;//목숨 4개
+		int [][] first_board = make_board();
+		int[][] suffle1_board = suffle(first_board);
+		int level = level_input();
+		if(level == 1) {
+			hole = 2;
+		}
+		else if(level == 2) {
+		    hole =50;
+		}
+		int [][] changed_board = change(suffle1_board);
+		int  [][] suffle2_board= suffle(changed_board);
+		int [][] answer = new int[9][9];
+		for (int i=0; i<suffle2_board.length; i++) {
+			for(int j=0; j<suffle2_board.length;j++) {
+				answer[i][j] = suffle2_board[i][j];
+			}
+		}
+
+		int [][] board = hole_make(suffle2_board,level,hole);
+		System.out.println("판 생성중");
+
+		System.out.println("-------------------");
+		print(board);
+		System.out.println("-------------------");
+		answer_input(answer,board,heart,hole);
+		long end = System.currentTimeMillis();
+		long time = (long) (( end - start )/1000.0);
+		System.out.println( "플레이 시간 : " + time +"ms");
+
+	}
 }
+	
+
